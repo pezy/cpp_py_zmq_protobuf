@@ -24,7 +24,7 @@ ADD_LIBRARY(proto ${PROTO_HEADER} ${PROTO_SRC})
 PROTOBUF_GENERATE_PYTHON(PROTO_PY msg.proto)
 add_custom_target(myTarget ALL DEPENDS ${PROTO_PY})
 
-add_executable(pub "wuserver.cpp")
+add_executable(pub "pub_server.cpp")
 target_link_libraries(pub proto
                           ${Protobuf_LIBRARIES}
                           ${ZeroMQ_STATIC_LIBRARY})
