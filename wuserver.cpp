@@ -1,36 +1,32 @@
 #include <zmq.h>
-#include <string.h>
-#include <time.h>
-#include <assert.h>
-
+#include <build/msg.pb.h>
 #include <string>
 #include <sstream>
 #include <iomanip>
 #include <iostream>
+#include <thread>
 
-#define randof(num)  (int) ((float) (num) * random () / (RAND_MAX + 1.0))
-
-int main (void)
+int main ()
 {
     void *context = zmq_ctx_new ();
     void *publisher = zmq_socket (context, ZMQ_PUB);
     int rc = zmq_bind (publisher, "tcp://*:5560");
-    assert (rc == 0);
 
-    //  Initialize random number generator
-    srandom ((unsigned) time (NULL));
-    while (1) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    
+    int i = 0;
+    while (true) {
         //  Get values that will fool the boss
-        int zipcode, temperature, relhumidity;
-        zipcode     = randof (100000);
-        temperature = randof (215) - 80;
-        relhumidity = randof (50) + 10;
-
+        RL::DataSet msg;
+        msg.set_count(i++);
+        msg.add_joint_position(1.1);
+        msg.add_joint_position(2.1);
+        msg.add_joint_velocity(-1.1);
+        msg.add_joint_velocity(-2.1); 
+        
         //  Send message to all subscribers
-        std::ostringstream oss;
-        oss << std::setw(5) << std::setfill('0') << zipcode;
-        oss << ' ' << temperature << ' ' << relhumidity;
-        std::string out = oss.str();
+        std::string out;
+        msg.SerializeToString(&out); 
         zmq_send(publisher, out.data(), out.size(), 0);
     }
     zmq_close (publisher);
